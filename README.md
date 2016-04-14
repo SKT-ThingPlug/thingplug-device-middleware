@@ -64,19 +64,19 @@ ThingPlug 와의 Protocol 은 oneM2M 과 GMMP 두가지 방식을 지원 하며,
 0. 데비안 패키지 파일을 다운로드 한다.
 
 	```
-	# wget https://[TBD]
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_ARM_1.0.0_1604051427.deb
 	```
 
 1. 데비안 패키지를 설치한다.(반드시 root 계정을 이용해야 한다.)	
 
 	* 일반적으로 dpkg 명령을 통하여 패키지를 설치한다.
 	```
-	# dpkg -i devicemiddleware_arm_1.0.0_20160301.deb
+	# dpkg -i devicemiddleware_ARM_1.0.0_1604051427.deb
 	```
 	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치한다.
 	```
 	# apt-get install gdebi
-	# gdebi devicemiddleware_arm_1.0.0_20160301.deb
+	# gdebi devicemiddleware_ARM_1.0.0_1604051427.deb
 	```
 
 #### 7. 패키지 설치 확인
