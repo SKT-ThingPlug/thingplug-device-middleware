@@ -1,5 +1,5 @@
 
-#### 2016년 4월 14일 - Version: 1.0.0
+#### 2016년 4월 14일 - Version: 1.0.1
 
 ## ThingPlug를 위한 Device 미들웨어 설치 및 실행가이드
 본 챕터는 SKT ThingPlug Device 미들웨어 설치 및 실행 방법을 서술한다.
@@ -64,25 +64,25 @@ ThingPlug 와의 Protocol 은 oneM2M 과 GMMP 두가지 방식을 지원 하며,
 0. 데비안 패키지 파일을 다운로드 한다.
 
 	```
-	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_ARM_1.0.0_1604051427.deb
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_ARM_0.9.0_1604281847.deb
 	```
 
 1. 데비안 패키지를 설치한다.(반드시 root 계정을 이용해야 한다.)	
 
 	* 일반적으로 dpkg 명령을 통하여 패키지를 설치한다.
 	```
-	# dpkg -i devicemiddleware_ARM_1.0.0_1604051427.deb
+	# dpkg -i devicemiddleware_ARM_0.9.0_1604281847.deb
 	```
 	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치한다.
 	```
 	# apt-get install gdebi
-	# gdebi devicemiddleware_ARM_1.0.0_1604051427.deb
+	# gdebi devicemiddleware_ARM_0.9.0_1604281847.deb
 	```
 
 #### 7. 패키지 설치 확인
 * 브라우저에서 http://IP-address:8000 번으로 접속하여 다음과 같은 화면(Gateway Portal)이 나오면 모든 설치가 완료된 것이다.  
 ![](images/gpIntro.png)
-> 로그인 화면에서 아이디 / 비밀번호 : thingplugadmin / adminthingplug
+> 로그인 화면에서 아이디 / 비밀번호 : thingplugadmin / adminthingplug (최초 로그인 후 반드시 비밀번호 변경요망)
 
 * 관리자 계정 비밀번호 변경하기
 ![](images/gpPwd.png)
