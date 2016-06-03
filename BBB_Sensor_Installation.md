@@ -10,7 +10,27 @@
 3. 각 센서의 드라이버 코드는 dtbo 파일을 제공하고, 이를 커널에 로드한다.
 4. 예제 코드는 드라이버 파일이 로드된 것을 가정하고 동작한다.
 
-### 2. Sensor List & Feature
+#### 2. 패키지 설치
+1. BBB보드용 데비안 패키지 파일을 다운로드 한다.
+
+	```
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_BBB_0.9.2_1605301625.deb
+	```
+
+2. 데비안 패키지를 설치한다.(반드시 root 계정을 이용해야 한다.)	
+
+	* 일반적으로 dpkg 명령을 통하여 패키지를 설치한다.
+	```
+	# dpkg -i devicemiddleware_BBB_0.9.2_1605301625.deb
+	```
+	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치한다.
+	```
+	# apt-get install gdebi
+	# gdebi devicemiddleware_BBB_0.9.2_1605301625.deb
+	```
+
+
+### 3. Sensor List & Feature
 
  BBB에서 사용되는 센서 목록을 나열하고, 센서 종류 및 특징을 설명한다.
 ![](images/10sensor.png)
@@ -26,7 +46,7 @@
 * **Door** - 센서 이름 : [MC38], 종류 : Magnetic(Door 센서), 특징 : Door 센서로 현재 개발 환경에서 GPIO 51번에 연결되며, 평소에는 1값을 리턴하고, Magnetic이 감지될 경우(Door Closed) 0값을 리턴한다.
 * **LED** - 센서 이름 : [RGB LED], 종류 : LED 센서, 특징 :  LED 센서로 현재 개발 환경에서 GPIO 5번에 빨간색 발광 다이오드가, GPIO 49번에 초록색 발광 다이오드가, GPIO 115번 파랑색 발광 다이오드가 연결되어 있으며, GPIO 값을 조절하여, 원하는 색이 점등되록 조절할 수 있다.
 
-### 3. Sensor Driver Installation
+### 4. Sensor Driver Installation
 
 BBB에서 사용되는 10종 센서는 4가지 연결방식을 사용한다. 1) UART , 2) 1-WIRE , 3) GPIO , 4) I2C 각 연결 방식을 지원하도록 Device Tree Overlay라는 커널 기능을 이용하여, 원하는 포트와 핀을 원하는 형태의 인터페이스로 설정한다. 본 문서에서 설명하는 방법은 NeuroMeka에서 제공하는 SensorCape와 호환이 되는 드라이버에 대한 설명이다. 
 미들웨어 패키지가 설치된 상태에서는 드라이버 설치 과정은 무시한다.
@@ -144,7 +164,7 @@ BBB에서 사용되는 10종 센서는 4가지 연결방식을 사용한다. 1) 
 	# reboot -f
 	```
 
-### 4. 부록 (Example Code)
+### 5. 부록 (Example Code)
 ##### 1) Motion | Button | Noise | Door  (GPIO51)
 -----
 ```c
