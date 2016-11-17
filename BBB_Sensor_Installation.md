@@ -14,19 +14,19 @@
 1. BBB보드용 데비안 패키지 파일을 다운로드 한다.
 
 	```
-	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_BBB_0.9.2_1605301625.deb
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_BBB_1.0.2_1611151149.deb
 	```
 
 2. 데비안 패키지를 설치한다.(반드시 root 계정을 이용해야 한다.)	
 
 	* 일반적으로 dpkg 명령을 통하여 패키지를 설치한다.
 	```
-	# dpkg -i devicemiddleware_BBB_0.9.2_1605301625.deb
+	# dpkg -i devicemiddleware_BBB_1.0.2_1611151149.deb
 	```
 	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치한다.
 	```
 	# apt-get install gdebi
-	# gdebi devicemiddleware_BBB_0.9.2_1605301625.deb
+	# gdebi devicemiddleware_BBB_1.0.2_1611151149.deb
 	```
 
 
