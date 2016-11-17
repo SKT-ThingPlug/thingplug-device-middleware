@@ -18,7 +18,7 @@ ARDUINO
 
 Source Tree
 ---
-* [Source](https://github.com/sobhamo/hello-world/tree/master/SDK/Arduino)
+* [Source](https://github.com/SKT-ThingPlug/thingplug-device-middleware/tree/master/SDK/Arduino)
 + __Arduino__ (project root)
 	+ __examples__
 		+ __ThingPlug_oneM2M_SDK__ (Middleware)
