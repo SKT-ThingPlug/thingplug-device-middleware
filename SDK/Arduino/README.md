@@ -101,3 +101,4 @@ ThingPlug_oneM2M_SDK 실행하기
 
 ![MATest.png](images/MATest.png)
 
+Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.

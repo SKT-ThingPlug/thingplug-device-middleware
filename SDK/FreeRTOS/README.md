@@ -193,3 +193,5 @@ Build & Run
 	+ Serial 통신 프로그램(ex. Putty, Tera Term 등)을 사용해서 프로그램 로그 확인
 	(※ sample code의 main.c 파일에서 지정한 speed와 맞춰 환경을 설정해야 글자가 깨져 보이지 않음)
 	![serial_log.png](images/serial_log.png "" "width:50%;")
+
+Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.

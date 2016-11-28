@@ -91,3 +91,4 @@ ThingPlug_oneM2M_SDK 빌드(oneM2M/samples/ThingPlug_oneM2M_SDK.c)
 	# output/ThingPlug_oneM2M_SDK
 	```
 	
+Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.

@@ -82,3 +82,4 @@ Supported Devices
 * [mbed](mbed)
 * [FreeRTOS](FreeRTOS)
 
+Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.

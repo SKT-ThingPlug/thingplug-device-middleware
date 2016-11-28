@@ -4,4 +4,4 @@ OOOOOOO
 
 == License ==
 
-Copyright (c) 2011-2014 OOOOOO LLC. All right reserved.
+Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.
