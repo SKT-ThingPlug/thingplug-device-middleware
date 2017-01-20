@@ -18,7 +18,7 @@ LIBS = -L../lib -L/usr/local/lib
 CFLAGS = -g -c -Wall $(FEATURE)
 CXXFLAGS = -c -Wall -D__STDC_LIMIT_MACROS
 COBJS = $(ONEM2M_SDK_OBJS)
-LDFLAGS = -lpthread -lssl -lpaho-mqtt3as
+LDFLAGS = -lpthread -lcrypto -lssl -lpaho-mqtt3as
 TARGET = SDKVerification
 
 all: $(TARGET)

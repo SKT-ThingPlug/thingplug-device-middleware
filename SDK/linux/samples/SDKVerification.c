@@ -8,6 +8,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -25,18 +26,12 @@
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/%s/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/%s"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
+// #define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
 
 #define TO_AE                               "%s/%s"
 #define TO_CONTAINER                        "%s/%s/%s"
 #define TO_CONTENTINSTANCE					"%s/%s/%s/cin-%s"
-
-#define NAME_NODE                           "nod-middleware"
-#define NAME_REMOTECSE                      "csr-middleware"
-#define NAME_CONTAINER                      "cnt-sensor01"
-#define NAME_MGMTCMD                        "mgc-reset"
-#define NAME_LOCATIONPOLICY                 "lcp-middleware"
-#define NAME_ACCESSCONTROLPOLICY            "acp-middleware"
+#define TO_MGMTCMDRESULT                    "%s/mgc-%s/exin-%s"
 #else
 #define TO_REMOTECSE                        "%s/remoteCSE-%s"
 #define TO_NODE                             "%s/node-%s"
@@ -51,14 +46,8 @@
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/+/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/+"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
 
-#define NAME_CONTAINER                      "%s_container_01"
-#define NAME_MGMTCMD                        "%s_mgmtCmd_01"
-#define NAME_AREANWKINFO                    "%s_areaNwkInfo_01"
-#define NAME_LOCATIONPOLICY                 "%s_locationPolicy_01"
-#define NAME_AE                             "%s_AE_01"
-#define NAME_POA                            "MQTT|%s"
+#define NAME_MGA                            "MQTT|%s"
 
 #define UKEY								"(TBD.)"
 #endif
@@ -120,6 +109,7 @@ static char mMgmtCmdResourceName[128] = "";
 static char mAreaNwkInfoResourceName[128] = "";
 static char mContainerResourceName[128] = "";
 #endif
+static char mClientID[24] = "";
 
 /**
  * @brief do verification step
@@ -432,7 +422,7 @@ void DoVerificationStep() {
         oneM2M_node node;
         memset(&node, 0, sizeof(node));
         node.ni = ONEM2M_NODEID;
-        snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
+        snprintf(buffer, sizeof(buffer), NAME_MGA, mClientID);
         node.mga = buffer;
         pc = (void *)&node;
         }
@@ -448,8 +438,8 @@ void DoVerificationStep() {
         remoteCSE.ni = ONEM2M_NODEID;
         remoteCSE.nm = ONEM2M_NODEID;
         remoteCSE.passCode = ONEM2M_PASSCODE;
-        snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
-        remoteCSE.poa = buffer;
+        // snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
+        // remoteCSE.poa = buffer;
         remoteCSE.rr = "true";
         remoteCSE.nl = mNodeLink;
         pc = (void *)&remoteCSE;
@@ -478,7 +468,7 @@ void DoVerificationStep() {
         oneM2M_mgmtCmd mgmtCmd;
         memset(&mgmtCmd, 0, sizeof(mgmtCmd));
         mgmtCmd.ni = ONEM2M_NODEID;
-        snprintf(buffer, sizeof(buffer), NAME_MGMTCMD, ONEM2M_NODEID);
+        snprintf(buffer, sizeof(buffer), NAME_MGMTCMD, ONEM2M_NODEID, CMT_DEVRESET);
         mgmtCmd.nm = buffer;
         mgmtCmd.dKey = mDeviceKey;
         mgmtCmd.cmt = "sensor_1";
@@ -644,7 +634,9 @@ void DoVerificationStep() {
         memset(&node, 0, sizeof(node));
         node.ni = ONEM2M_NODEID;
         node.dKey = mDeviceKey;
-        node.hcl = mHostCSELink;
+        snprintf(buffer, sizeof(buffer), NAME_MGA, mClientID);
+        node.mga = buffer;
+        // node.hcl = mHostCSELink;
         pc = (void *)&node;
         }
         break;
@@ -985,6 +977,35 @@ void MQTTMessageArrived(char* topic, char* msg, int msgLen) {
 }
 
 /**
+ * @brief     get Device MAC Address without Colon.
+ *
+ * @return    mac address
+ */
+char* GetMacAddressWithoutColon() {
+    int i, sock;
+    struct ifreq ifr;
+    char mac_adr[18] = "";
+
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        return NULL;
+    }
+
+    strcpy(ifr.ifr_name, "eth0");
+    if (ioctl(sock, SIOCGIFHWADDR, &ifr) < 0) {
+        close(sock);
+        return NULL;
+    }
+
+    for (i = 0; i < 6; i++) {
+        sprintf(&mac_adr[i*2],"%02X",((unsigned char*)ifr.ifr_hwaddr.sa_data)[i]);
+    }
+    close(sock);
+
+    return strdup(mac_adr);
+}
+
+/**
  * @brief main
  * @param[in] argc
  * @param[in] argv
@@ -1000,20 +1021,24 @@ int main(int argc, char **argv) {
     // create
     char subscribeTopic[2][128];
     char publishTopic[128] = "";
+    // char clientID[24] = "";
+    char* mac = GetMacAddressWithoutColon();
     memset(subscribeTopic, 0, sizeof(subscribeTopic));
+    snprintf(mClientID, sizeof(mClientID), "%s_%s", ACCOUNT_USER, mac+8);
+    if(mac) free(mac);
 #ifdef ONEM2M_V1_12
     snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, ONEM2M_SERVICENAME, ONEM2M_AE_RESOURCENAME);
     snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
     snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
 #else
-    snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, ONEM2M_NODEID);
-    snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, ONEM2M_NODEID);
-    snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, ONEM2M_NODEID);
+    snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, mClientID);
+    snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, mClientID);
+    snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, mClientID, ONEM2M_CSEBASE);
 #endif
     char* st[] = {subscribeTopic[0], subscribeTopic[1]};
 
 	int port = (!MQTT_ENABLE_SERVER_CERT_AUTH ? MQTT_PORT : MQTT_SECURE_PORT);
-	rc = tpSDKCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic);
+	rc = tpSDKCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic, mClientID);
     SKTDebugPrint(LOG_LEVEL_INFO, "tpSDKCreate result : %d", rc);
 
     while (mStep < VERIFICATION_END) {

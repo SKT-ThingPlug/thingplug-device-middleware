@@ -14,7 +14,7 @@
 
 #include "MQTT.h"
 #ifdef SPT_DEBUG_ENABLE
-#include "SPTekDebug.h"
+#include "SKTDebug.h"
 #else
 #include "SKTtpDebug.h"
 #endif
@@ -36,24 +36,38 @@ static tpMQTTMessageDeliveredCallback* mMessageDeliveredCallback;
 static tpMQTTMessageArrivedCallback* mMessageArrivedCallback;
 
 Content* gContent = NULL;
+static int mReconnected = 0;
 
 
 volatile MQTTAsync_token deliveredtoken;
 
-void OnConnect(void* context, MQTTAsync_successData* response){
+int MQTTAsyncSubscribeMany(int qos);
+
+void OnConnect(void* context, MQTTAsync_successData* response) {
     if(mConnectedCallback) mConnectedCallback(MQTTASYNC_SUCCESS);
     int i, rc;
-    for(i = 0; i < mSubscribeTopicsize; i++) {
-        rc = MQTTAsyncSubscribe(mSubscribeTopic[i], 2);
+    rc = MQTTAsyncSubscribeMany(1);
+    for(i =0; i < mSubscribeTopicsize; i++) {
 #ifdef SPT_DEBUG_ENABLE
-	   	SPTekDebugLog(LOG_LEVEL_INFO, "subscribed topic : %s, result : %d", mSubscribeTopic[i], rc);
+	   	SKTtpDebugLog(LOG_LEVEL_INFO, "subscribed topic : %s", mSubscribeTopic[i]);
 #else
-        SKTDebugPrint(LOG_LEVEL_INFO, "subscribed topic : %s, result : %d", mSubscribeTopic[i], rc);
+        SKTDebugPrint(LOG_LEVEL_INFO, "subscribed topic : %s", mSubscribeTopic[i]);
 #endif
-
+    }
         if(rc != MQTTASYNC_SUCCESS) {
             MQTTAsyncDestroy();
         }
+}
+
+void OnConnected(void* context, char* cause) {
+#ifdef SPT_DEBUG_ENABLE
+    SKTtpDebugLog(LOG_LEVEL_INFO, "on connected : %s", cause);
+#else
+    SKTDebugPrint(LOG_LEVEL_INFO, "on connected : %s", cause);
+#endif
+    if(strstr(cause, "reconnect")) {
+        mReconnected = 1;
+        MQTTAsyncSubscribeMany(1);
     }
 }
 
@@ -62,8 +76,11 @@ void OnConnectFailure(void* context, MQTTAsync_failureData* response){
 }
 
 void OnSubscribe(void* context, MQTTAsync_successData* response) {
-    mSubscribeTopicsize--;    
-    if(mSubscribedCallback && mSubscribeTopicsize == 0) mSubscribedCallback(MQTTASYNC_SUCCESS);
+    if(mReconnected) {
+        mReconnected = 0;
+    } else {
+        if(mSubscribedCallback) mSubscribedCallback(MQTTASYNC_SUCCESS);
+    }
 }
 
 void OnSubscribeFailure(void* context, MQTTAsync_failureData* response) {
@@ -140,7 +157,7 @@ int MQTTSetCallbacks(tpMQTTConnectedCallback* cc, tpMQTTSubscribedCallback* sc, 
 int MQTTAsyncCreate(char* host, int port, int keepalive, char* userName, char* password, int enableServerCertAuth, 
          char* subscribeTopic[], int subscribeTopicSize, char* publishTopic, char* enabledCipherSuites, int cleanSession, char* clientID) {
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "MQTTAsyncCreate()");
+	SKTtpDebugLog(LOG_LEVEL_INFO, "MQTTAsyncCreate()");
 #else
 	SKTDebugPrint(LOG_LEVEL_INFO, "MQTTAsyncCreate()");
 #endif
@@ -154,6 +171,7 @@ int MQTTAsyncCreate(char* host, int port, int keepalive, char* userName, char* p
     int portLength = 5;
     char server[serverLength];
     char pt[portLength];
+    mReconnected = 0;
 
     memset(server, 0, serverLength);
     memset(pt, 0, portLength);
@@ -195,11 +213,12 @@ int MQTTAsyncCreate(char* host, int port, int keepalive, char* userName, char* p
     memset(mPublishTopic, 0, sizeof(mPublishTopic));
     memcpy(mPublishTopic, publishTopic, strlen(publishTopic));
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "MQTTAsyncCreate() publish topic : %s", publishTopic);
+	SKTtpDebugLog(LOG_LEVEL_INFO, "MQTTAsyncCreate() publish topic : %s", publishTopic);
 #else
 	SKTDebugPrint(LOG_LEVEL_INFO, "MQTTAsyncCreate() publish topic : %s", publishTopic);
 #endif
     MQTTAsync_setCallbacks(mClient, NULL, ConnectionLostCallback, MessageArrivedCallback, MessageDeliveredCallback);
+    MQTTAsync_setConnected(mClient, NULL, OnConnected);
 
     if ((rc = MQTTAsync_connect(mClient, &conn_opts)) != MQTTASYNC_SUCCESS){
         MQTTAsyncDestroy();
@@ -221,6 +240,30 @@ int MQTTAsyncSubscribe(char* topic, int qos) {
     opts.onFailure = OnSubscribeFailure;
     opts.context = mClient;
     int rc = MQTTAsync_subscribe(mClient, topic, qos, &opts);
+    return rc;
+}
+
+/**
+ * @brief async subscribe a list of topics
+ * @param[in] qos The requested quality of service for the subscription.
+ * @return MQTTASYNC_SUCCESS if the subscription request is successful.
+ */
+int MQTTAsyncSubscribeMany(int qos) {
+    MQTTAsync_responseOptions opts = MQTTAsync_responseOptions_initializer;
+    opts.onSuccess = OnSubscribe;
+    opts.onFailure = OnSubscribeFailure;
+    opts.context = mClient;
+    int qosArray[mSubscribeTopicsize];
+    int i;
+    for (i = 0; i < mSubscribeTopicsize; i++) {
+        qosArray[i] = qos;
+    }
+    char* topics[] = {(char* const)mSubscribeTopic[0], 
+        (char* const)mSubscribeTopic[1], 
+        (char* const)mSubscribeTopic[2], 
+        (char* const)mSubscribeTopic[3], 
+        (char* const)mSubscribeTopic[4]};
+    int rc = MQTTAsync_subscribeMany(mClient, mSubscribeTopicsize, topics, qosArray, &opts);
     return rc;
 }
 
@@ -250,13 +293,13 @@ int MQTTAsyncPublishMessage(char* payload) {
  */
 int MQTTAsyncDisconnect() {
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "MQTTAsyncDisconnect()");
+	SKTtpDebugLog(LOG_LEVEL_INFO, "MQTTAsyncDisconnect()");
 #else
 	SKTDebugPrint(LOG_LEVEL_INFO, "MQTTAsyncDisconnect()");
 #endif
     MQTTAsync_disconnectOptions disc_opts = MQTTAsync_disconnectOptions_initializer;
     disc_opts.onSuccess = OnDisconnect;
-    int rc;
+    int rc = MQTTASYNC_FAILURE;
 	if(mClient != NULL) {
 		rc = MQTTAsync_disconnect(mClient, &disc_opts);
 	}
@@ -268,7 +311,7 @@ int MQTTAsyncDisconnect() {
  */
 void MQTTAsyncDestroy() {
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "MQTTAsyncDestroy()");
+	SKTtpDebugLog(LOG_LEVEL_INFO, "MQTTAsyncDestroy()");
 #else
     SKTDebugPrint(LOG_LEVEL_INFO, "MQTTAsyncDestroy()");
 #endif

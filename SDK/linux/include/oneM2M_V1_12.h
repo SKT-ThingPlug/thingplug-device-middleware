@@ -168,6 +168,8 @@ typedef struct
     char* exr;
 	/** execStatus **/
     char* exs;
+    /** execTarget **/
+	char* ext;
 } oneM2M_v1_12_execInstance;
 
 typedef struct

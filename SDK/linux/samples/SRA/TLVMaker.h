@@ -3,7 +3,7 @@
  *
  * @brief Define Structures & Functions to TLV
  *
- * Copyright (C) 2016. SK Telecom,All Rights Reserved.
+ * Copyright (C) 2016. SK Telecom, All Rights Reserved.
  * Written 2016,by SK Telecom
  */
 

@@ -3,7 +3,7 @@
  *
  * @brief Implementation make tlv value
  *
- * Copyright (C) 2016. SK Telecom,All Rights Reserved.
+ * Copyright (C) 2016. SK Telecom, All Rights Reserved.
  * Written 2016,by SK Telecom
  */
 

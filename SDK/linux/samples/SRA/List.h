@@ -4,8 +4,8 @@
  *
  * @brief Header for DeviceMiddleware List API
  *
- * Copyright (C) 2016. SPTek,All Rights Reserved.
- * Written 2016,by SPTek 
+ * Copyright (C) 2016. SK Telecom, All Rights Reserved.
+ * Written 2016,by SK Telecom 
  */
 
 #ifndef _DM_LIST_H_

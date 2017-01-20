@@ -13,7 +13,7 @@
 #include "MQTT.h"
 #include "oneM2M_V1.h"
 #ifdef SPT_DEBUG_ENABLE
-#include "SPTekDebug.h"
+#include "SKTDebug.h"
 #else
 #include "SKTtpDebug.h"
 #endif
@@ -105,7 +105,7 @@ static void SetFooter(char* payload) {
 static int CheckAttributes(int resourceType, int operation, char* to, char* ri, void* pc) {
     int rc = TP_SDK_SUCCESS;
 #ifdef SPT_DEBUG_ENABLE
-   	SPTekDebugLog(LOG_LEVEL_INFO, "ty : %d, op : %d, to : %s, ri : %s", resourceType, operation, to, ri);
+   	SKTtpDebugLog(LOG_LEVEL_INFO, "ty : %d, op : %d, to : %s, ri : %s", resourceType, operation, to, ri);
 #else
     SKTDebugPrint(LOG_LEVEL_INFO, "ty : %d, op : %d, to : %s, ri : %s", resourceType, operation, to, ri);
 #endif
@@ -281,7 +281,7 @@ int tp_oneM2M_V1_Request(int resourceType, int operation, char* to, char* ri, vo
 
     SetFooter(payload);
 #ifdef SPT_DEBUG_ENABLE
-   	SPTekDebugLog(LOG_LEVEL_INFO, "request : %s", payload);
+   	SKTtpDebugLog(LOG_LEVEL_INFO, "request : %s", payload);
 #else
     SKTDebugPrint(LOG_LEVEL_INFO, "request : %s", payload);
 #endif
@@ -401,7 +401,7 @@ int tpAddData(char* data, unsigned char length) {
 		strncat(gContent->data, data, length);
 	}
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
+	SKTtpDebugLog(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
 #else
 	SKTDebugPrint(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
 #endif

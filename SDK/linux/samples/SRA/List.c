@@ -4,8 +4,8 @@
  *
  * @brief DeviceMiddleware List API
  *
- * Copyright (C) 2016. SPTek,All Rights Reserved.
- * Written 2016,by SPTek 
+ * Copyright (C) 2016. SK Telecom, All Rights Reserved.
+ * Written 2016,by SK Telecom 
  */
 
 #include <stdio.h>
@@ -68,9 +68,9 @@ void DMList_Add(DMList *list, void *data)
 
 DMListNode* DMList_Remove(DMList *list)
 {
-    DMListNode *delNode = list->tail;
-
     if( list == NULL || list->head == NULL || list->tail == NULL || list->count == 0) return NULL;
+
+    DMListNode *delNode = list->tail;
 
     pthread_mutex_lock(&list->mutex);
     if( list->count == 1) {

@@ -13,7 +13,7 @@
 #include "MQTT.h"
 #include "oneM2M_V1_12.h"
 #ifdef SPT_DEBUG_ENABLE
-#include "SPTekDebug.h"
+#include "SKTDebug.h"
 #else
 #include "SKTtpDebug.h"
 #endif
@@ -120,7 +120,7 @@ static void SetFooter(char* payload) {
 static int CheckAttributes(int resourceType, int operation, char* fr, char* to, char* rqi, void* pc) {
     int rc = TP_SDK_SUCCESS;
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "ty : %d, op : %d, fr : %s, to : %s, rqi : %s", resourceType, operation, fr, to, rqi);
+	SKTtpDebugLog(LOG_LEVEL_INFO, "ty : %d, op : %d, fr : %s, to : %s, rqi : %s", resourceType, operation, fr, to, rqi);
 #else
     SKTDebugPrint(LOG_LEVEL_INFO, "ty : %d, op : %d, fr : %s, to : %s, rqi : %s", resourceType, operation, fr, to, rqi);
 #endif
@@ -259,8 +259,8 @@ int tp_oneM2M_V1_12_Request(int resourceType, int operation, char* fr, char* to,
 	            {
 	            oneM2M_v1_12_execInstance* execInstance = (oneM2M_v1_12_execInstance *)pc;
 	            oneM2M_Attribute pc[] = {{ATTR_ACPI, execInstance->acpi}, {ATTR_LBL, execInstance->lbl}, {ATTR_EXD, execInstance->exd},
-	                {ATTR_EXR, execInstance->exr}, {ATTR_RN, execInstance->rn}, {ATTR_EXS, execInstance->exs}};
-	            SetPCElement(payload, pc, resourceType, 6, operation);
+	                {ATTR_EXR, execInstance->exr}, {ATTR_EXS, execInstance->exs}, {ATTR_EXT, execInstance->ext}, {ATTR_RN, execInstance->rn}};
+	            SetPCElement(payload, pc, resourceType, 7, operation);
 	            }
 	            break;
 	        case accessControlPolicy:
@@ -277,7 +277,7 @@ int tp_oneM2M_V1_12_Request(int resourceType, int operation, char* fr, char* to,
 	}
     SetFooter(payload);
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "request : %s", payload);
+	SKTtpDebugLog(LOG_LEVEL_INFO, "request : %s", payload);
 #else
     SKTDebugPrint(LOG_LEVEL_INFO, "request : %s", payload);
 #endif
@@ -382,7 +382,7 @@ int tp_v1_12_AddData(char* data, unsigned char length) {
 		strncat(gContent->data, data, length);
 	}
 #ifdef SPT_DEBUG_ENABLE
-	SPTekDebugLog(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
+	SKTtpDebugLog(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
 #else
 	SKTDebugPrint(LOG_LEVEL_INFO, "Content data : %s, length : %d", gContent->data, gContent->len);
 #endif
