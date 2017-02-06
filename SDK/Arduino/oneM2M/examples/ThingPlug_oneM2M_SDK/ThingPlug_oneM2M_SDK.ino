@@ -17,9 +17,9 @@ void setup()
 {
     byte mac[] = {0x90, 0xA2, 0xDA, 0x10, 0x30, 0xDF}; // ex : 
 	Serial.begin(9600);
-	while (!Serial) {
-	  ; // wait for serial port to connect. Needed for native USB port only
-	}
+	// while (!Serial) {
+	//   ; // wait for serial port to connect. Needed for native USB port only
+	// }
     Serial.println("MA Start");
 	Ethernet.begin(mac);
     setNtpTime();

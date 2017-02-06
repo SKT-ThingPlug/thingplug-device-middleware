@@ -52,17 +52,12 @@ unsigned int localPort = 8888;  // local port to listen for UDP packets
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/%s/%s" // FIXME
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/%s"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
+// #define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
 
 #define TO_AE                               "%s/%s"
 #define TO_CONTAINER                        "%s/%s/%s"
-
-#define NAME_NODE                           "nod-middleware"
-#define NAME_REMOTECSE                      "csr-middleware"
-#define NAME_CONTAINER                      "cnt-sensor01"
-#define NAME_MGMTCMD                        "mgc-reset"
-#define NAME_LOCATIONPOLICY                 "lcp-middleware"
-#define NAME_ACCESSCONTROLPOLICY            "acp-middleware"
+#define TO_CONTENTINSTANCE					"%s/%s/%s/cin-%s"
+#define TO_MGMTCMDRESULT                    "%s/mgc-%s/exin-%s"
 #else
 #define TO_REMOTECSE                        "%s/remoteCSE-%s"
 #define TO_NODE                             "%s/node-%s"
@@ -77,17 +72,9 @@ unsigned int localPort = 8888;  // local port to listen for UDP packets
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/+/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/+"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
 
-#define NAME_CONTAINER                      "%s_container_01"
-#define NAME_MGMTCMD                        "%s_mgmtCmd_01"
-#define NAME_AREANWKINFO                    "%s_areaNwkInfo_01"
-#define NAME_LOCATIONPOLICY                 "%s_locationPolicy_01"
-#define NAME_AE                             "%s_AE_01"
-#define NAME_POA                            "MQTT|%s"
+#define NAME_MGA                            "MQTT|%s"
 #endif
-
-#define UKEY    "MlVoNTZacEZ2dWZqU1R0UTVSWDhaamtZNUNPMGNwL0JCYjlSVnYyWVkwVmVpWVhTTFg5dzZBN2JPdEhhc0N4dg=="
 
 enum VERIFICATION_STEP
 {
@@ -143,6 +130,7 @@ static char mMgmtCmdResourceName[128] = "";
 static char mAreaNwkInfoResourceName[128] = "";
 static char mContainerResourceName[128] = "";
 #endif
+static char mClientID[24] = "";
 
 void RequestOneM2M(int resourceType, int operation, char* fr, char* to, char* ri, void* pc) 
 {
@@ -436,7 +424,7 @@ void DoVerificationStep() {
         oneM2M_node node_create;
         memset(&node_create, 0, sizeof(node_create));
         node_create.ni = (char*)ONEM2M_NODEID;
-        snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
+        snprintf(buffer, sizeof(buffer), NAME_MGA, mClientID);
         node_create.mga = buffer;
         pc = (void *)&node_create;
         RequestOneM2M(resourceType,operation,fr,to,ri,pc);
@@ -451,8 +439,8 @@ void DoVerificationStep() {
         remoteCSE_create.ni = (char*)ONEM2M_NODEID;
         remoteCSE_create.nm = (char*)ONEM2M_NODEID;
         remoteCSE_create.passCode = (char*)ONEM2M_PASSCODE;
-        snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
-        remoteCSE_create.poa = buffer;
+        // snprintf(buffer, sizeof(buffer), NAME_POA, ONEM2M_NODEID);
+        // remoteCSE_create.poa = buffer;
         remoteCSE_create.rr = (char*)"true";
         remoteCSE_create.nl = mNodeLink;
         pc = (void *)&remoteCSE_create;
@@ -950,9 +938,9 @@ void setup()
 {
     byte mac[] = {0x90, 0xA2, 0xDA, 0x10, 0x30, 0xDF}; // ex : 
 	Serial.begin(9600);
-	while (!Serial) {
-	  ; // wait for serial port to connect. Needed for native USB port only
-	}
+	// while (!Serial) {
+	//   ; // wait for serial port to connect. Needed for native USB port only
+	// }
 	Ethernet.begin(mac);
 	
     int rc;
@@ -967,18 +955,19 @@ void setup()
 	char subscribeTopic[2][128];
 	char publishTopic[128] = "";
 	memset(subscribeTopic, 0, sizeof(subscribeTopic));
+    snprintf(mClientID, sizeof(mClientID), "%s_%s", ACCOUNT_USER, ONEM2M_CLIENTID);
 #ifdef ONEM2M_V1_12
     snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, ONEM2M_SERVICENAME, ONEM2M_AE_RESOURCENAME);
     snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
     snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
 #else
-    snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, ONEM2M_NODEID);
-    snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, ONEM2M_NODEID);
-    snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, ONEM2M_NODEID);
+    snprintf(subscribeTopic[0], sizeof(subscribeTopic[0]), TOPIC_SUBSCRIBE_REQ, mClientID);
+    snprintf(subscribeTopic[1], sizeof(subscribeTopic[1]), TOPIC_SUBSCRIBE_RES, mClientID);
+    snprintf(publishTopic, sizeof(publishTopic), TOPIC_PUBLISH, mClientID, ONEM2M_CSEBASE);
 #endif
 	char* st[] = {subscribeTopic[0], subscribeTopic[1]};
 
-    rc = tpSDKCreate((char*)MQTT_HOST, MQTT_PORT, MQTT_KEEP_ALIVE, (char*)ACCOUNT_USER, (char*)ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic);
+    rc = tpSDKCreate((char*)MQTT_HOST, MQTT_PORT, MQTT_KEEP_ALIVE, (char*)ACCOUNT_USER, (char*)ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic, mClientID);
 
     Serial.print("tpSDKCreate result : ");
     Serial.println(rc);
