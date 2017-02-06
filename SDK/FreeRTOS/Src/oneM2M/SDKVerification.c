@@ -25,17 +25,12 @@
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/%s/%s" // FIXME
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/%s"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
+//#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
 
 #define TO_AE                               "%s/%s"
 #define TO_CONTAINER                        "%s/%s/%s"
-
-#define NAME_NODE                           "nod-middleware"
-#define NAME_REMOTECSE                      "csr-middleware"
-#define NAME_CONTAINER                      "cnt-sensor01"
-#define NAME_MGMTCMD                        "mgc-reset"
-#define NAME_LOCATIONPOLICY                 "lcp-middleware"
-#define NAME_ACCESSCONTROLPOLICY            "acp-middleware"
+#define TO_CONTENTINSTANCE					"%s/%s/%s/cin-%s"
+#define TO_MGMTCMDRESULT                    "%s/mgc-%s/exin-%s"
 #else
 #define TO_REMOTECSE                        "%s/remoteCSE-%s"
 #define TO_NODE                             "%s/node-%s"
@@ -50,17 +45,12 @@
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/+/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/+"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
+//#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
 
-#define NAME_CONTAINER                      "%s_container_01"
-#define NAME_MGMTCMD                        "%s_mgmtCmd_01"
-#define NAME_AREANWKINFO                    "%s_areaNwkInfo_01"
-#define NAME_LOCATIONPOLICY                 "%s_locationPolicy_01"
-#define NAME_AE                             "%s_AE_01"
-#define NAME_POA                            "MQTT|%s"
+#define NAME_MGA                            "MQTT|%s"
+
+#define UKEY								"(TBD.)"
 #endif
-
-#define UKEY    "MlVoNTZacEZ2dWZqU1R0UTVSWDhaamtZNUNPMGNwL0JCYjlSVnYyWVkwVmVpWVhTTFg5dzZBN2JPdEhhc0N4dg=="
 
 enum VERIFICATION_STEP
 {
@@ -124,6 +114,7 @@ static char mMgmtCmdResourceName[DEFAULT_BUF_SIZE];
 static char mAreaNwkInfoResourceName[DEFAULT_BUF_SIZE];
 static char mContainerResourceName[DEFAULT_BUF_SIZE];
 #endif
+static char mClientID[24] = "";
 
 /**
  * @brief do verification step
@@ -425,7 +416,7 @@ void DoVerificationStep() {
 
 		ONEM2M_DEF_N_MEM_ALLOC(oneM2M_node, pNode);
 		pNode->ni = ONEM2M_NODEID;
-		sprintf(buffer, NAME_POA, ONEM2M_NODEID);
+		sprintf(buffer, NAME_MGA, mClientID);
 		pNode->mga = buffer;
 		pc = (void *)pNode;
 		}
@@ -441,8 +432,8 @@ void DoVerificationStep() {
 		pRemoteCSE->ni = ONEM2M_NODEID;
 		pRemoteCSE->nm = ONEM2M_NODEID;
 		pRemoteCSE->passCode = ONEM2M_PASSCODE;
-		sprintf(buffer, NAME_POA, ONEM2M_NODEID);
-		pRemoteCSE->poa = buffer;
+//		sprintf(buffer, , ONEM2M_NODEID);
+//		pRemoteCSE->poa = buffer;
 		pRemoteCSE->rr = "true";
 		pRemoteCSE->nl = mNodeLink;
 		pc = (void *)pRemoteCSE;
@@ -456,8 +447,8 @@ void DoVerificationStep() {
 
 		ONEM2M_DEF_N_MEM_ALLOC(oneM2M_container, pContainer);
 		pContainer->ni = ONEM2M_NODEID;
-		sprintf(buffer, NAME_CONTAINER, ONEM2M_NODEID);
-		pContainer->nm = buffer;
+//		sprintf(buffer, NAME_CONTAINER, ONEM2M_NODEID);
+		pContainer->nm = NAME_CONTAINER;
 		pContainer->dKey = mDeviceKey;
 		pContainer->lbl = "con";
 		pc = (void *)pContainer;
@@ -471,7 +462,7 @@ void DoVerificationStep() {
 
 		ONEM2M_DEF_N_MEM_ALLOC(oneM2M_mgmtCmd, pMgmtCmd);
 		pMgmtCmd->ni = ONEM2M_NODEID;
-		sprintf(buffer, NAME_MGMTCMD, ONEM2M_NODEID);
+		sprintf(buffer, NAME_MGMTCMD, ONEM2M_NODEID, "mgmtCmd_01");
 		pMgmtCmd->nm = buffer;
 		pMgmtCmd->dKey = mDeviceKey;
 		pMgmtCmd->cmt = "sensor_1";
@@ -738,6 +729,7 @@ void DoVerificationStep() {
 
 		ONEM2M_DEF_N_MEM_ALLOC(oneM2M_node, pNode);
 		pNode->ni = ONEM2M_NODEID;
+		pNode->dKey = mDeviceKey;
 		pc = (void *)pNode;
 		}
 		break;
@@ -999,20 +991,22 @@ int SDKVerificationMain()
 
 	// create
 	char subscribeTopic[TOPIC_SUBSCRIBE_SIZE][MQTT_TOPIC_MAX_LENGTH];
-	char publishTopic[MQTT_TOPIC_MAX_LENGTH];
+	memset(subscribeTopic, 0, sizeof(subscribeTopic));
+	char publishTopic[MQTT_TOPIC_MAX_LENGTH] = "";	
+	snprintf(mClientID, sizeof(mClientID), "%s_%s", ACCOUNT_USER, ONEM2M_CLIENTID);
 #ifdef ONEM2M_V1_12
     sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, ONEM2M_SERVICENAME, ONEM2M_AE_RESOURCENAME);
     sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
     sprintf(publishTopic, TOPIC_PUBLISH, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
 #else
-	sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, ONEM2M_NODEID);
-	sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, ONEM2M_NODEID);
-	sprintf(publishTopic, TOPIC_PUBLISH, ONEM2M_NODEID);
+	sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, mClientID);
+	sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, mClientID);
+	sprintf(publishTopic, TOPIC_PUBLISH, mClientID, ONEM2M_CSEBASE);
 #endif
 	char* st[] = {subscribeTopic[0], subscribeTopic[1]};
 
 	int port = (!MQTT_ENABLE_SERVER_CERT_AUTH ? MQTT_PORT : MQTT_SECURE_PORT);
-	rc = tpMQTTCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic);
+	rc = tpMQTTCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic, mClientID);
 	SKTDebugPrint(LOG_LEVEL_DEBUG, "tpMQTTCreate result : %d", rc);
 	if(rc == 0) {
 		while(mStep < VERIFICATION_END) {

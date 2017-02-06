@@ -30,17 +30,11 @@
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/%s/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/%s"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
+//#define TOPIC_PUBLISH                       "/oneM2M/req/%s/%s"
 
 #define TO_AE                               "%s/%s"
 #define TO_CONTAINER                        "%s/%s/%s"
-
-#define NAME_NODE                           "nod-middleware"
-#define NAME_REMOTECSE                      "csr-middleware"
-#define NAME_CONTAINER                      "cnt-sensor01"
-#define NAME_MGMTCMD                        "mgc-reset"
-#define NAME_LOCATIONPOLICY                 "lcp-middleware"
-#define NAME_ACCESSCONTROLPOLICY            "acp-middleware"
+#define TO_MGMTCMDRESULT                    "%s/mgc-%s/exin-%s"
 #else
 #define TO_REMOTECSE                        "%s/remoteCSE-%s"
 #define TO_NODE                             "%s/node-%s"
@@ -50,28 +44,14 @@
 #define TO_AE                               "%s/remoteCSE-%s/AE-%s"
 #define TO_LOCATIONPOLICY                   "%s/locationPolicy-%s"
 #define TO_MGMTCMD                          "%s/mgmtCmd-%s"
-#define TO_MGMTCMDRESULT                    "%s/mgmtCmd-%s/execInstance-%s"
+#define TO_MGMTCMDRESULT                    "%s/mgmtCmd-%s_%s/execInstance-%s"
 
 #define TOPIC_SUBSCRIBE_REQ                 "/oneM2M/req/+/%s"
 #define TOPIC_SUBSCRIBE_RES                 "/oneM2M/resp/%s/+"
 #define TOPIC_SUBSCRIBE_SIZE                2
-#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
-
-#define NAME_CONTAINER                      "%s_container_01"
-
-#define NAME_AREANWKINFO                    "%s_areaNwkInfo_01"
-#define NAME_LOCATIONPOLICY                 "%s_locationPolicy_01"
-#define NAME_AE                             "%s_AE_01"
-#define NAME_POA                            "MQTT|%s"
-
-#define NAME_MGMTCMD                        "%s_%s"
+//#define TOPIC_PUBLISH                       "/oneM2M/req/%s/ThingPlug"
+#define NAME_MGA                            "MQTT|%s"
 #endif
-
-#define CMT_DEVRESET						"DevReset"
-#define CMT_REPPERCHANGE					"RepPerChange"
-#define CMT_REPIMMEDIATE					"RepImmediate"
-#define CMT_TAKEPHOTO						"TakePhoto"
-#define CMT_LEDCONTROL						"LEDControl"
 
 #ifdef ONEM2M_V1_12
 static char mAEID[128] = "";
@@ -84,6 +64,7 @@ static char mRemoteCSEResourceName[128] = "";
 static char mContentInstanceResourceName[128] = "";
 static char mContainerResourceName[128] = "";
 #endif
+static char mClientID[24] = "";
 
 static enum PROCESS_STEP
 {
@@ -105,7 +86,7 @@ int CreateNode() {
 	rc = tp_v1_12_RegisterDevice(node, APP_AEID, ONEM2M_TO, ONEM2M_RI, NAME_NODE, "node_01", NULL, NULL, NULL);
 #else
 	char mga[128] = "";	
-	snprintf(mga, sizeof(mga), NAME_POA, ONEM2M_NODEID);
+	snprintf(mga, sizeof(mga), NAME_MGA, mClientID);
 	rc = tpRegisterDevice(node, ONEM2M_NODEID, ONEM2M_TO, ONEM2M_RI, mga, NULL, NULL, NULL, NULL, NULL);
 #endif
 	return rc;
@@ -119,9 +100,9 @@ int CreateRemoteCSE() {
 	memcpy(to, ONEM2M_TO, strlen(ONEM2M_TO));	
 #ifdef ONEM2M_V1_12
 #else
-	char poa[128] = ""; 	
-	snprintf(poa, sizeof(poa), NAME_POA, ONEM2M_NODEID);
-	rc = tpRegisterDevice(remoteCSE, ONEM2M_NODEID, ONEM2M_TO, ONEM2M_RI, NULL, ONEM2M_NODEID, "3", ONEM2M_PASSCODE, poa, mNodeLink);
+//	char poa[128] = ""; 	
+//	snprintf(poa, sizeof(poa), NAME_POA, ONEM2M_NODEID);
+	rc = tpRegisterDevice(remoteCSE, ONEM2M_NODEID, ONEM2M_TO, ONEM2M_RI, NULL, ONEM2M_NODEID, "3", ONEM2M_PASSCODE, NULL, mNodeLink);
 #endif
 	return rc;
 }
@@ -149,9 +130,9 @@ int CreateContainer() {
 	rc = tp_v1_12_RegisterContainer(mAEID, to, ONEM2M_RI, NAME_CONTAINER);
 #else
 	snprintf(to, sizeof(to), TO_REMOTECSE, ONEM2M_TO, mRemoteCSEResourceName);
-	char nm[128] = "";
-	snprintf(nm, sizeof(nm), NAME_CONTAINER, ONEM2M_NODEID);
-	rc = tpRegisterContainer(ONEM2M_NODEID, to, ONEM2M_RI, nm, mDeviceKey, "con");
+//	char nm[128] = "";
+//	snprintf(nm, sizeof(nm), NAME_CONTAINER, ONEM2M_NODEID);
+	rc = tpRegisterContainer(ONEM2M_NODEID, to, ONEM2M_RI, NAME_CONTAINER, mDeviceKey, "con");
 #endif
 	return rc;
 }
@@ -272,6 +253,19 @@ int CreateContentInstance() {
 	return rc;
 }
 
+static void UpdateExecInstance(char* rn, char* ri) {
+	SKTDebugPrint(LOG_LEVEL_INFO, "[rn : %s, ri : %s]", rn, ri);
+	char to[512] = "";
+#ifdef ONEM2M_V1_12
+	snprintf(to, sizeof(to), TO_MGMTCMDRESULT, ONEM2M_TO, rn, ri);	
+	SKTDebugPrint(LOG_LEVEL_INFO, "to : %s", to);
+	tp_v1_12_Result(ONEM2M_NODEID, to, ONEM2M_RI, "0", "3");
+#else
+	snprintf(to, sizeof(to), TO_MGMTCMDRESULT, ONEM2M_TO, ONEM2M_NODEID, rn, ri);
+	SKTDebugPrint(LOG_LEVEL_INFO, "to : %s", to);
+	tpResult(ONEM2M_NODEID, to, ONEM2M_RI, mDeviceKey, "0", "3");
+#endif
+}
 
 static int SimpleXmlParser(char* payload, char* name, char* value, int isPC) {
     int rc = 0;
@@ -342,11 +336,11 @@ static void ProcessCMD(char* payload, int payloadLen) {
 	SKTDebugPrint(LOG_LEVEL_INFO, "ProcessCMD payload : %.*s", payloadLen, payload);
 	char cmt[128] = "";
 	char exra[128] = "";
-	char resourceid[23] = "";
+	char resourceId[23] = "";
 	char value[10] = "";
 	SimpleXmlParser(payload, ATTR_CMT, cmt, 1);
 	SimpleXmlParser(payload, ATTR_EXRA, exra, 1);
-	SimpleXmlParser(payload, ATTR_RI, resourceid, 1);
+	SimpleXmlParser(payload, ATTR_RI, resourceId, 1);
 	SimpleJsonParser(exra, value);
 	if(strcmp(cmt, CMT_REPPERCHANGE) == 0) {
 		SKTDebugPrint(LOG_LEVEL_INFO, "cmt RepPerChange"); 
@@ -359,6 +353,7 @@ static void ProcessCMD(char* payload, int payloadLen) {
 	} else if(strcmp(cmt, CMT_REPIMMEDIATE) == 0) {
 		SKTDebugPrint(LOG_LEVEL_INFO, "cmt RepImmediate");
 	}
+	UpdateExecInstance(cmt, resourceId);
 }
 
 
@@ -453,11 +448,13 @@ void MQTTMessageArrived(char* topic, char* msg, int msgLen) {
 			break;
 		case PROCESS_CONTENTINSTANCE_CREATE:
 			SimpleXmlParser(payload, ATTR_RN, mContentInstanceResourceName, 1);
-			CreateMgmtCmd(CMT_DEVRESET);
-			CreateMgmtCmd(CMT_REPPERCHANGE);
-			CreateMgmtCmd(CMT_REPIMMEDIATE);
-			CreateMgmtCmd(CMT_TAKEPHOTO);
-			CreateMgmtCmd(CMT_LEDCONTROL);			
+			osDelay(1000);
+			CreateContentInstance();
+//			CreateMgmtCmd(CMT_DEVRESET);
+//			CreateMgmtCmd(CMT_REPPERCHANGE);
+//			CreateMgmtCmd(CMT_REPIMMEDIATE);
+//			CreateMgmtCmd(CMT_TAKEPHOTO);
+//			CreateMgmtCmd(CMT_LEDCONTROL);
 			break;
 		case PROCESS_MGMTCMD_CREATE: ;
 			char rn[128] = "";
@@ -496,29 +493,37 @@ int MARun() {
 
     // create
     char subscribeTopic[2][128];
-    char publishTopic[128] = "";
     memset(subscribeTopic, 0, sizeof(subscribeTopic));
+	char publishTopic[MQTT_TOPIC_MAX_LENGTH] = "";	
+	snprintf(mClientID, sizeof(mClientID), "%s_%s", ACCOUNT_USER, ONEM2M_CLIENTID);
 #ifdef ONEM2M_V1_12
     sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, ONEM2M_SERVICENAME, ONEM2M_AE_RESOURCENAME);
     sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
     sprintf(publishTopic, TOPIC_PUBLISH, ONEM2M_AE_RESOURCENAME, ONEM2M_SERVICENAME);
 #else
-    sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, ONEM2M_NODEID);
-    sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, ONEM2M_NODEID);
-    sprintf(publishTopic, TOPIC_PUBLISH, ONEM2M_NODEID);
+    sprintf(subscribeTopic[0], TOPIC_SUBSCRIBE_REQ, mClientID);
+    sprintf(subscribeTopic[1], TOPIC_SUBSCRIBE_RES, mClientID);
+    sprintf(publishTopic, TOPIC_PUBLISH, mClientID, ONEM2M_CSEBASE);
 #endif
     char* st[] = {subscribeTopic[0], subscribeTopic[1]};
 
 	int port = (!MQTT_ENABLE_SERVER_CERT_AUTH ? MQTT_PORT : MQTT_SECURE_PORT);
-	rc = tpMQTTCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic);
+	rc = tpMQTTCreate(MQTT_HOST, port, MQTT_KEEP_ALIVE, ACCOUNT_USER, ACCOUNT_PASSWORD, MQTT_ENABLE_SERVER_CERT_AUTH, st, TOPIC_SUBSCRIBE_SIZE, publishTopic, mClientID);
     SKTDebugPrint(LOG_LEVEL_INFO, "tpSDKCreate result : %d", rc);
 	if(rc == 0) {
 		while (mStep < PROCESS_END) {
+			SKTDebugPrint(LOG_LEVEL_INFO, "loop()");
+//			SKTDebugPrint(LOG_LEVEL_INFO, "step1 : %d", mStep);
+//			if(mStep == PROCESS_CONTENTINSTANCE_CREATE) {
+//				SKTDebugPrint(LOG_LEVEL_INFO, "step2 : %d", mStep);
+//
+//			}
 			if(tpMQTTYield(1000) != 0)	// wait for seconds
 			{
 				osDelay(500);
 			}
 		}
+		SKTDebugPrint(LOG_LEVEL_INFO, "disconn");
 		tpMQTTDisconnect();
 	}
 

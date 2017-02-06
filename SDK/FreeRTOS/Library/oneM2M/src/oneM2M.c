@@ -40,12 +40,13 @@ int tpMQTTSetCallbacks(tpMQTTConnectedCallback* cc, tpMQTTSubscribedCallback* sc
  * @param[in] subscribeTopic mqtt topic
  * @param[in] subscribeTopicSize mqtt topic size
  * @param[in] publishTopic publish topic
+ * @param[in] clientID The client identifier passed to the server when the client connects to it. 
  * @return the return code of the connection response
  */
 int tpMQTTCreate(char* host, int port, int keepalive, char* userName, char* password,
-        int enableServerCertAuth, char* subscribeTopic[], int subscribeTopicSize, char* publishTopic) {
+        int enableServerCertAuth, char* subscribeTopic[], int subscribeTopicSize, char* publishTopic, char* clientID) {
     int rc = handleMQTTCreate(host, port, keepalive, userName, password, enableServerCertAuth,
-        subscribeTopic, subscribeTopicSize, publishTopic, NULL, 1, "");
+        subscribeTopic, subscribeTopicSize, publishTopic, NULL, 1, clientID);
     return rc;
 }
 
