@@ -138,7 +138,4 @@ ThingPlug 와의 Protocol 은 oneM2M 과 GMMP 두가지 방식을 지원한다.
 * [oneM2M 등록과 주기보고 및 제어하기](oneM2M_Flow&Report_Guide.md)
 
 
-#### 12. SDK
-* [oneM2M SDK](SDK)
-
-Copyright (c) 2016 SK Telecom Co., Ltd. All Rights Reserved.
+Copyright (c) 2017 SK Telecom Co., Ltd. All Rights Reserved.
