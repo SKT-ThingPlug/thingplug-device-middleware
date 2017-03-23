@@ -1,5 +1,5 @@
 
-#### 2016년 11월 17일 - Version: 1.0.2
+#### 2017년 1월 10일 - Version: 1.0.5
 
 ## ThingPlug를 위한 Device 미들웨어 설치 및 실행가이드
 본 챕터는 SKT ThingPlug Device 미들웨어 설치 및 실행 방법을 서술한다.
@@ -61,19 +61,19 @@ ThingPlug 와의 Protocol 은 oneM2M 과 GMMP 두가지 방식을 지원한다.
 0. 데비안 패키지 파일을 다운로드 한다.
 
 	```
-	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_ARM_1.0.2_1611151150.deb
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/devicemiddleware_ARM_1.0.5_1701101306.deb
 	```
 
 1. 데비안 패키지를 설치한다.(반드시 root 계정을 이용해야 한다.)	
 
 	* 일반적으로 dpkg 명령을 통하여 패키지를 설치한다.
 	```
-	# dpkg -i devicemiddleware_ARM_1.0.2_1611151150.deb
+	# dpkg -i devicemiddleware_ARM_1.0.5_1701101306.deb
 	```
 	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치한다.
 	```
 	# apt-get install gdebi
-	# gdebi devicemiddleware_ARM_1.0.2_1611151150.deb
+	# gdebi devicemiddleware_ARM_1.0.5_1701101306.deb
 	```
 
 #### 7. 패키지 설치 확인
