@@ -58,21 +58,21 @@ typedef struct tagSensor {
 - 센서 Read 함수를 통해 데이터를 얻습니다. 타이머를 통해 주기적으로 Read 함수가 불리게 되며, 이를 센서 구조체에 저장합니다.
 
 ##### 2.1.4. 센서 제어
-- 센서 제어는 2가지로 구현되어 있다. GMMP/ONEM2M 방식과 SP1 방식이다. GMMP/ONEM2M은 SensorCommandList 모듈에서 제어를 등록 및 실행한다. 즉, 제어명령 및 함수가 별도 리스트로 관리된다. SP1 방식은 Sensor Interface 중 Control 함수를 만들고 제어 명령 시 Control 함수가 실행된다. 즉, 센서 구조체에서 제어함수가 관리된다. (SensorCommandList 자세한 설명은 2.4를 참고한다.)
+- 센서 제어는 SensorCommandList 모듈에서 제어를 등록 및 실행합니다. 즉, 제어명령 및 함수가 별도 리스트로 관리됩니다. (SensorCommandList 자세한 설명은 2.4를 참조)
 
 ##### 2.1.5. 센서 종료
-- 센서 구조체에 종료 함수가 연결되어 있으며, 센서 종료 시 필요한 작업이 수행된다. SMA가 종료될 시 실행된다.
+- 센서 구조체에 종료 함수가 연결되어 있으며, 센서 종료 시 필요한 작업이 수행됩니다. SMA가 종료될 시 실행됩니다.
 
 #### 2.2. Sensor Configuration
-* Sensor Configuration 은 SMA 에서 등록될 센서에 대한 설정값을 저장한다.
-* /usr/local/middleware/conf/iot_sensor.conf 정보가 로딩된다.
-* 사용자가 관리하고자 하는 센서목록을 정하고, 이를 Sensor Configuration 에 반영하는 작업은 필수이다.
-설정 값을 정리하면 다음과 같다
+* Sensor Configuration 은 SMA 에서 등록될 센서에 대한 설정값을 저장합니다.
+* /usr/local/middleware/conf/iot_sensor.conf 파일의 정보가 로딩됩니다.
+* 사용자가 관리하고자 하는 센서목록을 정하고, 이를 Sensor Configuration 에 반드시 반영해주어야 합니다.
+설정 값을 정리하면 다음과 같습니다.
 
 	* $ALL : { DeviceName } : oneM2M Container 컨테이너 생성 이름으로 사용
 	* SensorType : 센서의 종류 (예) 온도, 습도
     * SensorID : 같은 종류의 센서를 구분하기 위한 ID 값
-    * SensorName : 센서의 모델명 (예) DS18B20, CM1001 [중요!! 센서를 구분하는 기준이된다.]
+    * SensorName : 센서의 모델명 (예) DS18B20, CM1001 [중요!! 센서를 구분하는 기준임]
     * ReadInterval : 센서를 읽는 주기 (milliseconds)
     * OperationType : 센서 구동 타입 (예) series,event 
     * MaxInterval : 데이터 변화 없어도 허용되는 최대 시간(seconds), 0초이면 무한대로 판단
