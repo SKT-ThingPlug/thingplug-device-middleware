@@ -60,19 +60,19 @@ ThingPlug 와의 Protocol 은 oneM2M 방식을 지원하며, 플랫폼의 대시
 * 설치할 패키지 파일을 다운로드 합니다.
 
 	```
-	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/thingplug_dmw_ARM_1.5.0_1707241424.deb
+	# wget https://raw.githubusercontent.com/SKT-ThingPlug/thingplug-device-middleware/master/pkg/thingplug_dmw_ARM_1.5.0_1708021645.deb
 	```
 
 * 패키지를 설치합니다.(root 계정을 이용해야 함)
 
 	* 일반적으로 dpkg 명령을 통하여 패키지를 설치합니다.
 	```
-	# dpkg -i thingplug_dmw_ARM_1.5.0_1707241424.deb
+	# dpkg -i thingplug_dmw_ARM_1.5.0_1708021645.deb
 	```
 	* Library dependencies 등의 문제가 발생할 경우 gdebi 를 이용하여 패키지를 설치합니다.
 	```
 	# apt-get install gdebi
-	# gdebi thingplug_dmw_ARM_1.5.0_1707241424.deb
+	# gdebi thingplug_dmw_ARM_1.5.0_1708021645.deb
 	```
 
 #### 패키지 설치 확인
